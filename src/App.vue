@@ -1,7 +1,7 @@
 <template>
   <!-- <HelloWorld msg="Hello Vue 3 in CodeSandbox!" /> -->
   <div>
-    <div class="row">
+    <!-- <div class="row">
       <div class="column">
         <RatesTable />
       </div>
@@ -10,8 +10,8 @@
       </div>
     </div>
     <div class="row">
-      <!-- <BasicTable /> -->
-    </div>
+    </div> -->
+    <TransferForm />
   </div>
 </template>
 
@@ -19,16 +19,16 @@
 // import HelloWorldVue from "./components/HelloWorld.vue";
 // import Timer from "./components/Timer.vue";
 import TransferForm from "./components/TransferForm";
-import RatesTable from "./components/RatesTable";
-import BasicTable from "./components/BasicTable";
+// import RatesTable from "./components/RatesTable";
+// import BasicTable from "./components/BasicTable";
 export default {
   name: "App",
   components: {
     // HelloWorld: HelloWorldVue,
     // Timer: Timer,
     TransferForm: TransferForm,
-    RatesTable: RatesTable,
-    BasicTable: BasicTable,
+    // RatesTable: RatesTable,
+    // BasicTable: BasicTable,
   },
 };
 </script>
