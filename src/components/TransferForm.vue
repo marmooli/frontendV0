@@ -3,9 +3,9 @@
     <head> </head>
     <div class="row">
       <div class="column">
-        <p>Trans F</p>
+        <p>Trans Form</p>
         <div>
-          y send:
+          send:
           <input
             type="number"
             :disabled="validate ? '' : disabled"
@@ -25,12 +25,12 @@
             </option>
           </select>
         </div>
-        <p>- {{ fee }} trans. service f.</p>
-        <p>= {{ amountToEx }} amount to ex</p>
-        <p>rate:{{ rate }}</p>
-        <p>time:{{ countDown }}</p>
+        <p>- <b>{{ fee }}</b> {{send_selected}} transaction fees</p>
+        <p>= <b>{{ amountToEx }}</b> {{send_selected}} will exchanged with</p>
+        <p>your guaranteed rate: <b>{{ rate }}</b></p>
+        <p>(will be updated in <b>{{ countDown }}</b> sec.)</p>
         <div>
-          y receive:
+          receive:
           <button @click="isLockedReceiveCur = !isLockedReceiveCur">
             {{ lockOrUnlock }}
           </button>
@@ -79,7 +79,7 @@ export default {
       send_curs: {
         1: { id: 1, val: "EUR" },
         2: { id: 2, val: "USD" },
-        2: { id: 2, val: "CAD" },
+        3: { id: 3, val: "CAD" },
       },
       send_selected: "CAD",
       // receive_curs: {
@@ -150,27 +150,31 @@ export default {
       } else {
         this.updateReceive();
       }
-      let base = this.receive_selected;
-      let symbols = this.send_selected;
+      let symbols = this.receive_selected;
+      let base = this.send_selected;
       this.getRateAPI(base, symbols, rand_offset);
     },
 
     getRateAPI(base, symbols, rand_offset) {
-      axios
-        .get("https://api.ratesapi.io/api/latest", {
-          params: {
-            base: base,
-            symbols: symbols,
-          },
-        })
-        .then((response) => {
-          this.rate = Number(
-            (Object.values(response.data.rates)[0] + rand_offset).toFixed(4)
-          );
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      if (base === symbols) {
+        this.rate = 1;
+      } else {
+        axios
+          .get("https://api.ratesapi.io/api/latest", {
+            params: {
+              base: base,
+              symbols: symbols,
+            },
+          })
+          .then((response) => {
+            this.rate = Number(
+              (Object.values(response.data.rates)[0] + rand_offset).toFixed(4)
+            );
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     },
 
     checkReceiveCur() {
@@ -217,9 +221,9 @@ export default {
       return Number((this.send_cur - this.fee).toFixed(2));
     },
     lockOrUnlock() {
-      let text = "unlocked";
+      let text = "U";
       if (this.isLockedReceiveCur) {
-        text = "locked";
+        text = "L";
       }
       return text;
     },
