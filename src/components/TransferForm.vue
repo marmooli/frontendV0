@@ -67,6 +67,7 @@
 </template>
   
 <script>
+const axios = require("axios").default;
 export default {
   data() {
     return {
@@ -76,21 +77,22 @@ export default {
       countDown: 12,
       rate: "updating...",
       send_curs: {
-        1: { id: 1, val: "AAA" },
-        2: { id: 2, val: "BBB" },
+        1: { id: 1, val: "EUR" },
+        2: { id: 2, val: "USD" },
+        2: { id: 2, val: "CAD" },
       },
-      send_selected: "AAA",
+      send_selected: "CAD",
       // receive_curs: {
       //   1: { id: 1, val: "AAA" },
       //   2: { id: 2, val: "BBB" },
       //   3: { id: 3, val: "CCC" },
       // },
       receive_curs: {
-        1: { id: 1, val: "AAA", b_rate: 1, s_rate: 0.1 },
-        2: { id: 2, val: "BBB", b_rate: 2, s_rate: 0.2 },
-        3: { id: 3, val: "CCC", b_rate: 3, s_rate: 0.3 },
+        1: { id: 1, val: "EUR", b_rate: 1, s_rate: 0.1 },
+        2: { id: 2, val: "USD", b_rate: 2, s_rate: 0.2 },
+        3: { id: 3, val: "CAD", b_rate: 3, s_rate: 0.3 },
       },
-      receive_selected: "CCC",
+      receive_selected: "USD",
       flagReset: false,
       flagCount: true,
       flagSendChanged: false,
@@ -139,25 +141,50 @@ export default {
       this.flagReset = true;
     },
     updateRate() {
-      const max = 100;
-      const min = 1;
-      const random = Math.floor(Math.random() * (max - min + 1) + min);
-      this.rate = random;
+      const max = 0.01;
+      const min = -0.01;
+      var rand_offset = Number((Math.random() * (max - min) + min).toFixed(4));
+      console.log(rand_offset);
       if (this.isLockedReceiveCur) {
         this.updateSend();
       } else {
         this.updateReceive();
       }
+      let base = this.receive_selected;
+      let symbols = this.send_selected;
+      this.getRateAPI(base, symbols, rand_offset);
     },
+
+    getRateAPI(base, symbols, rand_offset) {
+      axios
+        .get("https://api.ratesapi.io/api/latest", {
+          params: {
+            base: base,
+            symbols: symbols,
+          },
+        })
+        .then((response) => {
+          this.rate = Number(
+            (Object.values(response.data.rates)[0] + rand_offset).toFixed(4)
+          );
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
     checkReceiveCur() {
       this.flagSendChanged = true;
     },
+
     checkSend() {
       this.send_cur = Number((this.send_cur * 1).toFixed(2));
     },
+
     checkReceive() {
       this.receive_cur = Number((this.receive_cur * 1).toFixed(2));
     },
+
     updateReceive() {
       if (!this.isLockedReceiveCur) {
         setTimeout(() => {
@@ -171,6 +198,7 @@ export default {
         }, 500);
       }
     },
+
     updateSend() {
       setTimeout(() => {
         this.send_cur = Number(
@@ -180,6 +208,7 @@ export default {
       }, 500);
     },
   },
+
   computed: {
     validate() {
       return this.countDown === "-" || this.flagReset === true;
