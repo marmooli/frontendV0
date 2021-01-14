@@ -62,47 +62,6 @@
           </button>
         </p>
       </div>
-      <div class="column">
-        <p>R T</p>
-        <div>
-          <p>
-            base:
-            <select
-              name="receive_cur"
-              id="receive_cur"
-              v-model="receive_selected"
-            >
-              <option
-                v-for="item in receive_curs"
-                :value="item.val"
-                :key="item.id"
-              >
-                {{ item.val }}
-              </option>
-            </select>
-          </p>
-        </div>
-        <table class="ratesTable">
-          <tr>
-            <th>cur</th>
-            <th>y b</th>
-            <th>y s</th>
-            <th>spread</th>
-          </tr>
-          <tr v-for="item in receive_curs" :key="item.id">
-            <td>{{ item.val }}/{{ receive_selected }}</td>
-            <td>
-              {{ item.b_rate }}
-            </td>
-            <td>
-              {{ item.s_rate }}
-            </td>
-            <td>
-              {{ item.b_rate - item.s_rate }}
-            </td>
-          </tr>
-        </table>
-      </div>
     </div>
   </div>
 </template>
