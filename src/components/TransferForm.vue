@@ -47,7 +47,6 @@
           <input
             type="number"
             :disabled="validate ? '' : disabled"
-            min="0"
             step=".01"
             placeholder="enter receive amount"
             v-model="receive_cur"
@@ -184,24 +183,35 @@ export default {
 
     updateSendReceive() {
       if (!this.isLockedReceiveCur) {
-        // update receive
-        setTimeout(() => {
-          this.send_cur = Number((this.send_cur * 1).toFixed(2));
-          this.receive_cur = Number(
-            ((this.send_cur - this.fee) * this.rate).toFixed(2)
-          );
-          if (this.receive_cur < 0) {
-            this.receive_cur = 0;
-          }
-        }, 500);
+        // send locked
+        if (this.send_cur !== "") {
+          // update receive
+          setTimeout(() => {
+            if (this.send_cur < 0) {
+              this.send_cur = "";
+            }
+            this.send_cur = Number((this.send_cur * 1).toFixed(2));
+            this.receive_cur = Number(
+              ((this.send_cur - this.fee) * this.rate).toFixed(2)
+            );
+            if (this.receive_cur < 0) {
+              this.receive_cur = 0;
+            }
+          }, 0);
+        }
       } else {
-        //update send
-        setTimeout(() => {
-          this.receive_cur = Number((this.receive_cur * 1).toFixed(2));
-          this.send_cur = Number(
-            (this.receive_cur / this.rate + this.fee).toFixed(2)
-          );
-        }, 500);
+        if (this.receive_cur !== "") {
+          //update send
+          setTimeout(() => {
+            if (this.receive_cur < 0) {
+              this.receive_cur = "";
+            }
+            this.receive_cur = Number((this.receive_cur * 1).toFixed(2));
+            this.send_cur = Number(
+              (this.receive_cur / this.rate + this.fee).toFixed(2)
+            );
+          }, 0);
+        }
       }
     },
 
