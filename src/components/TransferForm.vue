@@ -27,6 +27,7 @@
               {{ item.val }}
             </option>
           </select>
+          <button @click="toggle">T</button>
         </div>
         <p>
           - <b>{{ fee }}</b> {{ send_selected }} transaction fees
@@ -202,6 +203,12 @@ export default {
           );
         }, 500);
       }
+    },
+
+    toggle() {
+      let buffer = this.send_selected;
+      this.send_selected = this.receive_selected;
+      this.receive_selected = buffer;
     },
   },
   computed: {
