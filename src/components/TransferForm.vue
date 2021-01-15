@@ -6,11 +6,10 @@
         <p>Trans Form</p>
         <div>
           <b v-if="!isLockedReceiveCur">Send:</b>
-          <span v-else>Send:</span>
+          <span v-else @click="isLockedReceiveCur = false">Send:</span>
           <input
             type="number"
             :disabled="validate ? '' : disabled"
-            required="required"
             :min="fee"
             step="0.01"
             placeholder="enter send amount"
@@ -43,7 +42,7 @@
         </p>
         <div>
           <b v-if="isLockedReceiveCur">Receive:</b>
-          <span v-else>Receive:</span>
+          <span v-else @click="isLockedReceiveCur = true">Receive:</span>
           <input
             type="number"
             :disabled="validate ? '' : disabled"
@@ -83,7 +82,7 @@ const axios = require("axios").default;
 export default {
   data() {
     return {
-      send_cur: "",
+      send_cur: 100,
       receive_cur: "",
       fee: 5.59,
       countDown: 12,
