@@ -3,7 +3,7 @@
     <head> </head>
     <div class="row">
       <div class="column">
-        <p>Trans Form</p>
+        <p>Transaction Form</p>
         <div>
           <b v-if="!isLockedReceiveCur">Send:</b>
           <span v-else @click="isLockedReceiveCur = false">Send:</span>
@@ -30,10 +30,49 @@
           <button @click="toggle">T</button>
         </div>
         <p>
-          - <b>{{ fee }}</b> {{ send_selected }} transaction fees
+          <b>-{{ transactionFee }}</b> {{ send_selected }}
+          <select
+            name="transaction type"
+            v-if="send_selected == 'USD'"
+            v-model="usd_feeType_selected"
+          >
+            <option
+              v-for="feeType in transactionFees"
+              :value="feeType.val"
+              :key="feeType.id"
+            >
+              {{ feeType.val }}
+            </option>
+          </select>
+          <select
+            name="transaction type"
+            v-if="send_selected == 'EUR'"
+            v-model="eur_feeType_selected"
+          >
+            <option
+              v-for="feeType in eurTransactionFees"
+              :value="feeType.type"
+              :key="feeType.id"
+            >
+              {{ feeType.type }}
+            </option>
+          </select>
+          <span v-if="send_selected == 'CAD'">
+            <select name="transaction type" v-model="cad_feeType_selected">
+              <option
+                v-for="feeType in cadTransactionFees"
+                :value="feeType.type"
+                :key="feeType.id"
+              >
+                {{ feeType.type }}
+              </option>
+            </select>
+            <!-- {{feeType.transFee}} -->
+          </span>
+          transaction fees
         </p>
         <p>
-          = <b>{{ amountToEx }}</b> {{ send_selected }} will exchanged with
+          <b>={{ amountToEx }}</b> {{ send_selected }}, which we exchange with
         </p>
         <p>
           your guaranteed rate: <b>{{ rate }}</b>
@@ -94,11 +133,30 @@ export default {
       },
       send_selected: "CAD",
       receive_curs: {
-        1: { id: 1, val: "EUR", b_rate: 1, s_rate: 0.1 },
-        2: { id: 2, val: "USD", b_rate: 2, s_rate: 0.2 },
-        3: { id: 3, val: "CAD", b_rate: 3, s_rate: 0.3 },
+        1: { id: 1, val: "EUR" },
+        2: { id: 2, val: "USD" },
+        3: { id: 3, val: "CAD" },
       },
       receive_selected: "USD",
+      transactionFees: {
+        1: { id: 1, val: "fast", transFee: 5.99 },
+        2: { id: 2, val: "middle", transFee: 3.49 },
+        3: { id: 3, val: "slow", transFee: 1.85 },
+      },
+      eurTransactionFees: {
+        1: { id: 1, type: "PayPal", transFee: 4.99 },
+        2: { id: 2, type: "SEPA", transFee: 2.49 },
+        3: { id: 3, type: "xyz", transFee: 0.85 },
+      },
+      cadTransactionFees: {
+        1: { id: 1, type: "PayPal", transFee: 6.99 },
+        2: { id: 2, type: "Wire", transFee: 4.49 },
+        3: { id: 3, type: "Email", transFee: 2.85 },
+        4: { id: 4, type: "Stripe", transFee: 1.45 },
+      },
+      usd_feeType_selected: "middle",
+      eur_feeType_selected: "PayPal",
+      cad_feeType_selected: "Wire",
       flagReset: false,
       flagCount: true,
       flagSendChanged: false,
@@ -240,6 +298,10 @@ export default {
         text = "L";
       }
       return text;
+    },
+
+    transactionFee() {
+      return 5.99;
     },
   },
 };
