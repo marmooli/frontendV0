@@ -23,8 +23,12 @@
             v-model="send_selected"
             title="select your currency, wich you want to exchange"
           >
-            <option v-for="item in send_curs" :value="item.val" :key="item.id">
-              {{ item.val }}
+            <option
+              v-for="item in currencies.send_currencies"
+              :value="item.symbol"
+              :key="item.symbol"
+            >
+              {{ item.symbol }}
             </option>
           </select>
           <button @click="toggle">T</button>
@@ -44,6 +48,20 @@
               {{ feeType.val }}
             </option>
           </select>
+          <select>
+            <option
+              v-for="item in currencies.send_currencies.find(
+                (s) => s.symbol == this.send_selected
+              ).sending_ways"
+              :key="item.way"
+              :value="item"
+            >
+              {{ item.way }}
+            </option>
+          </select>
+          <!-- <p v-for="item in currencies.send_currencies[0].sending_ways" :key="item.way">{{item.way}}</p> -->
+          <!-- <p>{{currencies.send_currencies.find( s => s.symbol == this.send_selected ).sending_ways}}</p> -->
+          <!-- <p v-if="currencies.send_currencies.find( s => s.symbol == "USD" ) ">!!!!</p> -->
           <select
             name="transaction type"
             v-if="send_selected == 'EUR'"
@@ -98,11 +116,11 @@
             v-model="receive_selected"
           >
             <option
-              v-for="item in receive_curs"
-              :value="item.val"
-              :key="item.id"
+              v-for="item in currencies.receive_currencies"
+              :value="item.symbol"
+              :key="item.symbol"
             >
-              {{ item.val }}
+              {{ item.symbol }}
             </option>
           </select>
         </div>
@@ -126,17 +144,28 @@ export default {
       fee: 5.59,
       countDown: 12,
       rate: "updating...",
-      send_curs: {
-        1: { id: 1, val: "EUR" },
-        2: { id: 2, val: "USD" },
-        3: { id: 3, val: "CAD" },
+      currencies: {
+        send_currencies: [
+          {
+            symbol: "USD",
+            sending_ways: [
+              { way: "usd_fast", fee: 5.99 },
+              { way: "usd_middle", fee: 3.49 },
+              { way: "usd_slow", fee: 1.85 },
+            ],
+          },
+          {
+            symbol: "EUR",
+            sending_ways: [
+              { way: "eur_fast", fee: 4.99 },
+              { way: "eur_middle", fee: 2.49 },
+              { way: "eur_slow", fee: 0.85 },
+            ],
+          },
+        ],
+        receive_currencies: [{ symbol: "USD" }, { symbol: "EUR" }],
       },
-      send_selected: "CAD",
-      receive_curs: {
-        1: { id: 1, val: "EUR" },
-        2: { id: 2, val: "USD" },
-        3: { id: 3, val: "CAD" },
-      },
+      send_selected: "EUR",
       receive_selected: "USD",
       transactionFees: {
         1: { id: 1, val: "fast", transFee: 5.99 },
