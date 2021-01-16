@@ -34,60 +34,18 @@
           <button @click="toggle">T</button>
         </div>
         <p>
-          <b>-{{ transactionFee }}</b> {{ send_selected }}
-          <select
-            name="transaction type"
-            v-if="send_selected == 'USD'"
-            v-model="usd_feeType_selected"
-          >
-            <option
-              v-for="feeType in transactionFees"
-              :value="feeType.val"
-              :key="feeType.id"
-            >
-              {{ feeType.val }}
-            </option>
-          </select>
-          <select>
+          <b>-{{ sendingWayFee }}</b> {{ send_selected }}
+          <select v-model="way_selected">
             <option
               v-for="item in currencies.send_currencies.find(
                 (s) => s.symbol == this.send_selected
               ).sending_ways"
               :key="item.way"
-              :value="item"
             >
               {{ item.way }}
             </option>
           </select>
-          <!-- <p v-for="item in currencies.send_currencies[0].sending_ways" :key="item.way">{{item.way}}</p> -->
-          <!-- <p>{{currencies.send_currencies.find( s => s.symbol == this.send_selected ).sending_ways}}</p> -->
-          <!-- <p v-if="currencies.send_currencies.find( s => s.symbol == "USD" ) ">!!!!</p> -->
-          <select
-            name="transaction type"
-            v-if="send_selected == 'EUR'"
-            v-model="eur_feeType_selected"
-          >
-            <option
-              v-for="feeType in eurTransactionFees"
-              :value="feeType.type"
-              :key="feeType.id"
-            >
-              {{ feeType.type }}
-            </option>
-          </select>
-          <span v-if="send_selected == 'CAD'">
-            <select name="transaction type" v-model="cad_feeType_selected">
-              <option
-                v-for="feeType in cadTransactionFees"
-                :value="feeType.type"
-                :key="feeType.id"
-              >
-                {{ feeType.type }}
-              </option>
-            </select>
-            <!-- {{feeType.transFee}} -->
-          </span>
-          transaction fees
+          transaction fees <br /><b>{{ way_selected }}</b>
         </p>
         <p>
           <b>={{ amountToEx }}</b> {{ send_selected }}, which we exchange with
@@ -142,7 +100,7 @@ export default {
       send_cur: 100,
       receive_cur: "",
       fee: 5.59,
-      countDown: 12,
+      countDown: 60,
       rate: "updating...",
       currencies: {
         send_currencies: [
@@ -167,25 +125,7 @@ export default {
       },
       send_selected: "EUR",
       receive_selected: "USD",
-      transactionFees: {
-        1: { id: 1, val: "fast", transFee: 5.99 },
-        2: { id: 2, val: "middle", transFee: 3.49 },
-        3: { id: 3, val: "slow", transFee: 1.85 },
-      },
-      eurTransactionFees: {
-        1: { id: 1, type: "PayPal", transFee: 4.99 },
-        2: { id: 2, type: "SEPA", transFee: 2.49 },
-        3: { id: 3, type: "xyz", transFee: 0.85 },
-      },
-      cadTransactionFees: {
-        1: { id: 1, type: "PayPal", transFee: 6.99 },
-        2: { id: 2, type: "Wire", transFee: 4.49 },
-        3: { id: 3, type: "Email", transFee: 2.85 },
-        4: { id: 4, type: "Stripe", transFee: 1.45 },
-      },
-      usd_feeType_selected: "middle",
-      eur_feeType_selected: "PayPal",
-      cad_feeType_selected: "Wire",
+      way_selected: "eur_middle",
       flagReset: false,
       flagCount: true,
       flagSendChanged: false,
@@ -195,18 +135,21 @@ export default {
       validated: 0,
     };
   },
+
   mounted() {
     this.updateRate();
     this.countDownTimer();
   },
+
   watch: {
     flagCount: "countDownTimer",
     send_cur() {
-      // this.isLockedReceiveCur= false;
       this.updateSendReceive();
     },
     receive_cur() {
-      // this.isLockedReceiveCur= true;
+      this.updateSendReceive();
+    },
+    way_selected() {
       this.updateSendReceive();
     },
     send_selected: "resetRate",
@@ -220,7 +163,7 @@ export default {
         this.rate = "updating...";
         setTimeout(() => {
           this.updateRate();
-          this.countDown = 12 + 1;
+          this.countDown = 60 + 1;
           this.flagReset = false;
         }, 1000);
       }
@@ -232,6 +175,9 @@ export default {
 
     resetRate() {
       this.rate = "updating...";
+      this.way_selected = this.currencies.send_currencies.find(
+        (s) => s.symbol === this.send_selected
+      ).sending_ways[0].way;
       this.flagReset = true;
     },
 
@@ -278,9 +224,7 @@ export default {
               this.send_cur = "";
             }
             this.send_cur = Number((this.send_cur * 1).toFixed(2));
-            this.receive_cur = Number(
-              ((this.send_cur - this.fee) * this.rate).toFixed(2)
-            );
+            this.receive_cur = Number((this.amountToEx * this.rate).toFixed(2));
             if (this.receive_cur < 0) {
               this.receive_cur = 0;
             }
@@ -307,6 +251,11 @@ export default {
       this.send_selected = this.receive_selected;
       this.receive_selected = buffer;
     },
+
+    setDefaults() {
+      this.way_selected = this.currencies.send_currencies[0].sending_ways[0].way;
+      console.log(this.way_selected);
+    },
   },
   computed: {
     validate() {
@@ -314,23 +263,19 @@ export default {
     },
 
     amountToEx() {
-      let amountToEx = Number((this.send_cur - this.fee).toFixed(2));
+      let amountToEx = Number((this.send_cur - this.sendingWayFee).toFixed(2));
       if (amountToEx < 0) {
         amountToEx = 0;
       }
       return amountToEx;
     },
 
-    lockOrUnlock() {
-      let text = "U";
-      if (this.isLockedReceiveCur) {
-        text = "L";
-      }
-      return text;
-    },
-
-    transactionFee() {
-      return this.fee;
+    sendingWayFee() {
+      let b = this.currencies.send_currencies.find(
+        (s) => s.symbol === this.send_selected
+      ).sending_ways;
+      let a = b.find((t) => t.way === this.way_selected).fee;
+      return a;
     },
   },
 };
