@@ -301,7 +301,7 @@ export default {
     },
 
     transactionFee() {
-      return 5.99;
+      return this.fee;
     },
   },
 };
