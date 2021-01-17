@@ -291,11 +291,6 @@ export default {
       this.send_selected = this.receive_selected;
       this.receive_selected = buffer;
     },
-
-    // setDefaults() {
-    //   this.way_selected = this.currencies.send_currencies[0].sending_ways[0].way;
-    //   console.log(this.way_selected);
-    // },
   },
   computed: {
     validate() {
