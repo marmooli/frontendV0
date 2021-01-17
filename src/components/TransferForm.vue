@@ -45,7 +45,7 @@
               {{ item.way }}
             </option>
           </select>
-          transaction fees <br /><b>{{ way_selected }}</b>
+          transaction fees
         </p>
         <p>
           <b>={{ amountToEx }}</b> {{ send_selected }}, which we exchange with
@@ -93,39 +93,52 @@
 </template>
   
 <script>
-const axios = require("axios").default;
+import axios from "axios";
+
 export default {
   data() {
     return {
       send_cur: 100,
-      receive_cur: "",
+      receive_cur: 100,
       fee: 5.59,
-      countDown: 60,
+      countDown: 600,
       rate: "updating...",
       currencies: {
         send_currencies: [
           {
             symbol: "USD",
             sending_ways: [
-              { way: "usd_fast", fee: 5.99 },
-              { way: "usd_middle", fee: 3.49 },
-              { way: "usd_slow", fee: 1.85 },
+              { way: "usd_fast", fee: 3.3 },
+              { way: "usd_middle", fee: 3.2 },
+              { way: "usd_slow", fee: 3.1 },
             ],
           },
           {
             symbol: "EUR",
             sending_ways: [
-              { way: "eur_fast", fee: 4.99 },
-              { way: "eur_middle", fee: 2.49 },
-              { way: "eur_slow", fee: 0.85 },
+              { way: "eur_fast", fee: 4.3 },
+              { way: "eur_middle", fee: 4.2 },
+              { way: "eur_slow", fee: 4.1 },
+            ],
+          },
+          {
+            symbol: "CAD",
+            sending_ways: [
+              { way: "cad_fast", fee: 2.3 },
+              { way: "cad_middle", fee: 2.2 },
+              { way: "cad_slow", fee: 2.1 },
             ],
           },
         ],
-        receive_currencies: [{ symbol: "USD" }, { symbol: "EUR" }],
+        receive_currencies: [
+          { symbol: "USD" },
+          { symbol: "EUR" },
+          { symbol: "CAD" },
+        ],
       },
       send_selected: "EUR",
       receive_selected: "USD",
-      way_selected: "eur_middle",
+      way_selected: "eur_middle", // you must unfotunatly hardcode this
       flagReset: false,
       flagCount: true,
       flagSendChanged: false,
@@ -137,6 +150,7 @@ export default {
   },
 
   mounted() {
+    console.log("mounted");
     this.updateRate();
     this.countDownTimer();
   },
@@ -144,16 +158,25 @@ export default {
   watch: {
     flagCount: "countDownTimer",
     send_cur() {
+      console.log("send_cur watched!");
       this.updateSendReceive();
     },
     receive_cur() {
+      console.log("receive_cur watched!");
       this.updateSendReceive();
     },
     way_selected() {
+      console.log("way_selected watched!");
       this.updateSendReceive();
     },
-    send_selected: "resetRate",
-    receive_selected: "resetRate",
+    send_selected() {
+      this.resetRate();
+      this.updateRate();
+    },
+    receive_selected() {
+      this.resetRate();
+      this.updateRate();
+    },
   },
 
   methods: {
@@ -163,7 +186,7 @@ export default {
         this.rate = "updating...";
         setTimeout(() => {
           this.updateRate();
-          this.countDown = 60 + 1;
+          this.countDown = 600 + 1;
           this.flagReset = false;
         }, 1000);
       }
@@ -174,6 +197,7 @@ export default {
     },
 
     resetRate() {
+      console.log("resetRate()");
       this.rate = "updating...";
       this.way_selected = this.currencies.send_currencies.find(
         (s) => s.symbol === this.send_selected
@@ -182,6 +206,7 @@ export default {
     },
 
     updateRate() {
+      console.log("updateRate()");
       const max = 0.01;
       const min = -0.01;
       var rand_offset = Number((Math.random() * (max - min) + min).toFixed(4));
@@ -193,6 +218,7 @@ export default {
     },
 
     getRateAPI(base, symbols, rand_offset) {
+      console.log("getRateAPI()");
       if (base === symbols) {
         this.rate = 1;
       } else {
@@ -215,6 +241,12 @@ export default {
     },
 
     updateSendReceive() {
+      console.log(
+        "updateSendReceive() with send_cur= " +
+          this.send_cur +
+          " and receive_cur= " +
+          this.receive_cur
+      );
       if (!this.isLockedReceiveCur) {
         // send locked
         if (this.send_cur !== "") {
@@ -224,11 +256,18 @@ export default {
               this.send_cur = "";
             }
             this.send_cur = Number((this.send_cur * 1).toFixed(2));
-            this.receive_cur = Number((this.amountToEx * this.rate).toFixed(2));
-            if (this.receive_cur < 0) {
+            let buffer = Number((this.amountToEx * this.rate).toFixed(2));
+            console.log("buffer " + buffer);
+            if (buffer < 0) {
               this.receive_cur = 0;
+            } else if (isNaN(buffer)) {
+              buffer = Math.random();
+              console.log(`random buffer ${buffer}`);
+            } else {
+              this.receive_cur = buffer;
             }
           }, 0);
+          console.log("Receive updated to " + this.receive_cur);
         }
       } else {
         if (this.receive_cur !== "") {
@@ -243,6 +282,7 @@ export default {
             );
           }, 0);
         }
+        console.log("Send updated to " + this.send_cur);
       }
     },
 
@@ -252,10 +292,10 @@ export default {
       this.receive_selected = buffer;
     },
 
-    setDefaults() {
-      this.way_selected = this.currencies.send_currencies[0].sending_ways[0].way;
-      console.log(this.way_selected);
-    },
+    // setDefaults() {
+    //   this.way_selected = this.currencies.send_currencies[0].sending_ways[0].way;
+    //   console.log(this.way_selected);
+    // },
   },
   computed: {
     validate() {
