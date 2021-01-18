@@ -98,7 +98,7 @@ import axios from "axios";
 export default {
   data() {
     return {
-      send_cur: 100,
+      send_cur: -100,
       receive_cur: 100,
       fee: 5.59,
       countDown: 600,
@@ -161,6 +161,9 @@ export default {
       console.log("send_cur watched!");
       this.updateSendReceive();
     },
+    rate() {
+      this.updateSendReceive();
+    },
     receive_cur() {
       console.log("receive_cur watched!");
       this.updateSendReceive();
@@ -188,7 +191,7 @@ export default {
           this.updateRate();
           this.countDown = 600 + 1;
           this.flagReset = false;
-        }, 1000);
+        }, 0);
       }
       setTimeout(() => {
         this.countDown -= 1;
@@ -212,13 +215,15 @@ export default {
       var rand_offset = Number((Math.random() * (max - min) + min).toFixed(4));
       console.log(rand_offset);
       let symbols = this.receive_selected;
+      console.log("receive selected " + this.receive_selected);
       let base = this.send_selected;
+      console.log("send selected " + this.send_selected);
       this.getRateAPI(base, symbols, rand_offset);
       this.updateSendReceive();
     },
 
     getRateAPI(base, symbols, rand_offset) {
-      console.log("getRateAPI()");
+      console.log("getRateAPI()" + base + " " + symbols);
       if (base === symbols) {
         this.rate = 1;
       } else {
@@ -233,11 +238,14 @@ export default {
             this.rate = Number(
               (Object.values(response.data.rates)[0] + rand_offset).toFixed(4)
             );
+            console.log("response " + response.data.rates[0]);
+            console.log("rate in axios loop" + this.rate);
           })
           .catch((error) => {
             console.log(error);
           });
       }
+      console.log("rate after else= " + this.rate);
     },
 
     updateSendReceive() {
@@ -251,36 +259,30 @@ export default {
         // send locked
         if (this.send_cur !== "") {
           // update receive
-          setTimeout(() => {
-            if (this.send_cur < 0) {
-              this.send_cur = "";
-            }
-            this.send_cur = Number((this.send_cur * 1).toFixed(2));
-            let buffer = Number((this.amountToEx * this.rate).toFixed(2));
-            console.log("buffer " + buffer);
-            if (buffer < 0) {
-              this.receive_cur = 0;
-            } else if (isNaN(buffer)) {
-              buffer = Math.random();
-              console.log(`random buffer ${buffer}`);
-            } else {
-              this.receive_cur = buffer;
-            }
-          }, 0);
+          if (this.send_cur < 0) {
+            this.send_cur = -this.send_cur;
+            console.log("send updated to " + this.send_cur);
+          }
+          this.send_cur = Number((this.send_cur * 1).toFixed(2));
+          let atx = this.amountToEx;
+          console.log("atx= " + atx);
+          this.receive_cur = Number((atx * this.rate).toFixed(2));
           console.log("Receive updated to " + this.receive_cur);
+        } else {
+          this.receive_cur = "";
         }
       } else {
         if (this.receive_cur !== "") {
           //update send
-          setTimeout(() => {
-            if (this.receive_cur < 0) {
-              this.receive_cur = "";
-            }
-            this.receive_cur = Number((this.receive_cur * 1).toFixed(2));
-            this.send_cur = Number(
-              (this.receive_cur / this.rate + this.fee).toFixed(2)
-            );
-          }, 0);
+          if (this.receive_cur < 0) {
+            this.receive_cur = -this.receive_cur;
+          }
+          this.receive_cur = Number((this.receive_cur * 1).toFixed(2));
+          this.send_cur = Number(
+            (this.receive_cur / this.rate + this.fee).toFixed(2)
+          );
+        } else {
+          this.send_cur = "";
         }
         console.log("Send updated to " + this.send_cur);
       }
