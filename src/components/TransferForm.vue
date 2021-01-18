@@ -159,14 +159,21 @@ export default {
     flagCount: "countDownTimer",
     send_cur() {
       console.log("send_cur watched!");
-      this.updateSendReceive();
+      if (!this.isLockedReceiveCur) {
+        console.log("forwarded to update");
+        this.updateSendReceive();
+      }
     },
-    rate() {
-      this.updateSendReceive();
-    },
+    // rate() {
+    //   console.log("rate watched!");
+    //   this.updateSendReceive();
+    // },
     receive_cur() {
       console.log("receive_cur watched!");
-      this.updateSendReceive();
+      if (this.isLockedReceiveCur) {
+        console.log("forwarded to update");
+        this.updateSendReceive();
+      }
     },
     way_selected() {
       console.log("way_selected watched!");
